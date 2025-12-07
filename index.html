@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMAK RUPIAH - Simulasi Interaktif Mata Uang Rupiah</title>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            /* MODIFIED: Changed from solid color to a fresh 3-color gradient */
+            background-color: #22d3ee;
+            background-image:
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+                linear-gradient(135deg, #34d399 0%, #22d3ee 50%, #3b82f6 100%);
+            /* Emerald to Cyan to Blue */
+            background-attachment: fixed;
+            background-size: auto, cover;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .bg-pattern {
+            /* Kept specific pattern for overlays if needed, though body handles main bg now */
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        /* NEW: Money Background Pattern for Slot Area */
+        .bg-money-pattern {
+            background-color: rgba(255, 255, 255, 0.9);
+            background-image: url("data:image/svg+xml,%3Csvg width='80' height='40' viewBox='0 0 80 40' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-weight='bold' font-size='14' fill='%2316a34a' fill-opacity='0.15' text-anchor='middle' dominant-baseline='middle' transform='rotate(-15 40 20)'%3ERp%3C/text%3E%3C/svg%3E");
+        }
+
+        /* Custom Scrollbar */
+        .money-tray::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .money-tray::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .money-tray::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        /* Money Styling */
+        .money-card {
+            transition: transform 0.1s, box-shadow 0.1s;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .money-card:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .money-coin {
+            border-radius: 50%;
+            box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.2), 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .money-paper {
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .money-paper::before {
+            content: '';
+            position: absolute;
+            left: -10%;
+            top: 0;
+            width: 20%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: skewX(-20deg);
+        }
+
+        .money-paper::after {
+            content: '';
+            position: absolute;
+            right: -10%;
+            top: 0;
+            width: 20%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: skewX(-20deg);
+        }
+
+        /* Animations */
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .pop-in {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .animate-bounce-custom {
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .drop-zone-active {
+            background-color: rgba(254, 240, 138, 0.5);
+            /* Yellow tint */
+            border-color: #fde047;
+            transform: scale(1.02);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Disabled Money Style */
+        .money-disabled {
+            filter: grayscale(100%);
+            opacity: 0.4;
+            cursor: not-allowed !important;
+        }
+
+        /* NEW: Typography Logo Style */
+        .typography-logo {
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 900;
+            /* Extra Bold */
+            color: #ffffff;
+            /* White Text Fill */
+            -webkit-text-stroke: 2px #0f766e;
+            /* Teal-700 Outline */
+            text-shadow:
+                4px 4px 0 #0f766e,
+                /* 1st Shadow (Teal) */
+                8px 8px 0 #facc15,
+                /* 2nd Shadow (Yellow) */
+                10px 10px 2px rgba(0, 0, 0, 0.2);
+            /* Soft Drop Shadow */
+            letter-spacing: 2px;
+            line-height: 1.1;
+        }
+    </style>
+</head>
+
+<body class="h-screen w-screen flex flex-col relative">
+
+    <!-- START SCREEN -->
+    <!-- MODIFIED: Changed bg-cyan-400 to a gradient class to match the theme -->
+    <div id="start-screen"
+        class="absolute inset-0 z-50 bg-gradient-to-br from-emerald-400 via-cyan-500 to-blue-600 flex flex-col items-center justify-center p-4">
+        <div class="absolute inset-0 opacity-20 bg-pattern"></div>
+
+        <!-- Removed 'animate-float' class so the card is static -->
+        <div
+            class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-2xl max-w-md w-full text-center relative z-10 border-4 border-white/50 flex flex-col max-h-[90vh] overflow-y-auto">
+            <div class="text-6xl text-green-500 mb-4 drop-shadow-md">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+
+            <!-- MODIFIED: Typography Title -->
+            <h1 class="text-5xl md:text-6xl mb-4 typography-logo">SIMAK<br>RUPIAH</h1>
+
+            <p
+                class="text-gray-500 text-base md:text-lg mb-4 font-medium font-bold uppercase tracking-widest text-teal-800 bg-teal-100 py-1 px-3 rounded-full inline-block mx-auto border border-teal-200">
+                Simulasi Interaktif</p>
+
+            <div class="bg-blue-50 rounded-xl p-4 text-left mb-6 border-2 border-blue-100 text-sm">
+                <h3 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
+                    <i class="fas fa-info-circle"></i> Cara Bermain:
+                </h3>
+                <ul class="text-gray-700 space-y-1">
+                    <li class="flex items-start gap-2">
+                        <span
+                            class="bg-blue-200 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">1</span>
+                        <span>Lihat jumlah uang & syaratnya.</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span
+                            class="bg-blue-200 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</span>
+                        <span><b>Tarik/Klik</b> uang ke kotak atas.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="space-y-3 w-full">
+                <button onclick="startGame()"
+                    class="w-full bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white text-xl md:text-2xl font-bold py-3 md:py-4 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fas fa-play"></i> MULAI MAIN
+                </button>
+
+                <button onclick="showAbout()"
+                    class="w-full bg-white hover:bg-gray-100 text-teal-600 border-2 border-teal-200 text-lg font-bold py-3 rounded-full shadow-md transform transition hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fas fa-users"></i> TENTANG APLIKASI
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-8 text-white/80 text-sm font-medium tracking-wider text-center">
+            KHARISMA MUDA &copy; 2025
+        </div>
+    </div>
+
+    <!-- GAME VIEW WRAPPER -->
+    <div id="game-view" class="hidden flex-col h-full w-full">
+
+        <!-- Header / Stats -->
+        <div class="h-16 w-full flex justify-between items-center px-4 md:px-6 pt-4 z-10 shrink-0 gap-2">
+            <div class="flex items-center gap-2">
+                <button onclick="backToHome()"
+                    class="bg-white/20 hover:bg-white/40 text-white p-2 rounded-full transition shadow-lg">
+                    <i class="fas fa-home text-lg"></i>
+                </button>
+
+                <div id="lives-container" class="flex gap-1">
+                    <!-- Hearts injected via JS -->
+                </div>
+            </div>
+
+            <div
+                class="bg-indigo-600 text-white px-3 md:px-5 py-1 rounded-lg font-bold shadow-lg border-2 border-indigo-400 text-sm md:text-base animate-pulse">
+                LEVEL <span id="level-display" class="text-yellow-300 text-lg md:text-xl ml-1">1</span>
+            </div>
+
+            <div
+                class="bg-yellow-400 text-yellow-900 px-3 md:px-6 py-2 rounded-full font-bold text-lg md:text-xl shadow-lg border-2 border-yellow-200 flex items-center gap-2">
+                <i class="fas fa-star"></i>
+                <span id="score">0</span>
+            </div>
+        </div>
+
+        <!-- Main Game Area -->
+        <div class="flex-1 flex flex-col md:flex-row w-full max-w-7xl mx-auto p-4 gap-4 overflow-y-auto relative">
+
+            <!-- Left Side: Drop Slots -->
+            <div class="w-full md:w-1/2 flex flex-col shrink-0">
+                <!-- Added bg-money-pattern class here -->
+                <div
+                    class="bg-money-pattern rounded-2xl p-4 shadow-xl h-full min-h-[300px] flex flex-col border-4 border-white/50">
+                    <h3
+                        class="text-center text-green-800 font-bold mb-2 uppercase tracking-wider text-sm md:text-base bg-white/80 rounded-lg py-1 shadow-sm">
+                        Area Penyimpanan Uang</h3>
+                    <!-- Modified Grid: 5 columns on desktop (md:grid-cols-5) for 16:9 proportion -->
+                    <div class="grid grid-cols-3 gap-2 md:gap-3 flex-1 content-center" id="slots-container">
+                        <!-- Slots injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Interaction -->
+            <div class="w-full md:w-1/2 flex flex-col relative shrink-0">
+                <!-- Added pt-10 (padding top) to prevent bubble clipping and ensure symmetry -->
+                <div class="flex-1 flex flex-col items-center justify-center relative min-h-[180px] pt-10 pb-4">
+
+                    <!-- Speech Bubble -->
+                    <div
+                        class="relative bg-teal-700 text-white p-3 md:p-5 rounded-2xl shadow-xl border-4 border-teal-500 mb-2 max-w-md w-full text-center z-10">
+                        <p class="text-sm md:text-lg font-medium opacity-90">Saya ingin menukar uang:</p>
+                        <h2 class="text-2xl md:text-3xl font-bold text-yellow-300 my-1" id="target-amount">Rp 0</h2>
+
+                        <div id="constraint-area"
+                            class="mt-1 bg-teal-800/60 p-1.5 rounded-lg border border-teal-500/50 hidden">
+                            <p class="text-sm md:text-base text-teal-200 mb-1 uppercase tracking-wide font-bold">Hanya
+                                gunakan pecahan:</p>
+                            <div id="constraint-icons" class="flex justify-center flex-wrap gap-1"></div>
+                        </div>
+                        <p id="default-instruction" class="text-[10px] md:text-xs opacity-80 mt-1">Geser uang ke slot
+                            yang sesuai!</p>
+                        <div
+                            class="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[15px] border-l-transparent border-t-[20px] border-t-teal-700 border-r-[15px] border-r-transparent">
+                        </div>
+                    </div>
+
+                    <div class="w-32 h-32 md:w-60 md:h-60 relative mt-1 mb-2">
+                        <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-2xl">
+                            <path d="M50,180 Q50,130 100,130 T150,180 V200 H50 Z" fill="#4B5563" />
+                            <path d="M85,135 L100,155 L115,135" fill="white" stroke="none" />
+                            <circle cx="100" cy="90" r="45" fill="#FCA5A5" />
+                            <path d="M55,90 Q50,40 100,30 Q150,40 145,90 Q150,80 155,70 Q140,20 100,20 Q60,20 45,70 Z"
+                                fill="#1F2937" />
+                            <circle cx="85" cy="85" r="5" fill="#1F2937" />
+                            <circle cx="115" cy="85" r="5" fill="#1F2937" />
+                            <path d="M85,105 Q100,115 115,105" fill="none" stroke="#1F2937" stroke-width="3"
+                                stroke-linecap="round" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="h-auto bg-gray-200 rounded-t-3xl p-4 border-t-8 border-gray-300 shadow-2xl relative">
+                    <div class="bg-gray-800 rounded-lg p-3 mb-3 border-4 border-gray-600 shadow-inner">
+                        <div class="text-gray-400 text-xs font-mono uppercase text-right">Total Terkumpul</div>
+                        <div class="text-green-400 font-mono text-3xl md:text-4xl text-right font-bold tracking-widest"
+                            id="current-total">0</div>
+                    </div>
+
+                    <button onclick="checkAnswer()"
+                        class="w-full bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-2xl font-bold py-4 rounded-xl shadow-[0_4px_0_rgb(21,128,61)] active:shadow-none active:translate-y-1 transition-all flex items-center justify-center gap-3">
+                        <i class="fas fa-cash-register"></i> TUKAR SEKARANG
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Tray -->
+        <div
+            class="h-32 md:h-40 bg-gray-800/90 backdrop-blur-md w-full shadow-[0_-4px_10px_rgba(0,0,0,0.3)] z-20 flex flex-col shrink-0">
+            <div class="text-white text-xs text-center py-1 opacity-70 uppercase tracking-widest">
+                <i class="fas fa-hand-pointer mr-1"></i> Tarik uang dari sini atau klik untuk ambil
+            </div>
+            <!-- Added md:justify-center to center the money on larger screens -->
+            <div class="flex-1 flex items-center gap-4 overflow-x-auto px-6 pb-2 money-tray md:justify-center"
+                id="money-source">
+                <!-- Money injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="about-modal"
+        class="fixed inset-0 bg-black/70 z-[60] hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full text-center relative shadow-2xl animate-pop-in">
+            <button onclick="closeAbout()"
+                class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition text-2xl">
+                <i class="fas fa-times-circle"></i>
+            </button>
+
+            <div class="mb-4">
+                <div class="inline-block bg-teal-100 p-3 rounded-full mb-2">
+                    <i class="fas fa-users text-3xl text-teal-600"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-teal-700">TENTANG KAMI</h2>
+                <div class="h-1 w-20 bg-yellow-400 mx-auto mt-2 rounded-full"></div>
+            </div>
+
+            <div class="text-left bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4">
+                <h3 class="font-bold text-gray-800 mb-1">Developer:</h3>
+                <h4 class="text-xl font-bold text-indigo-600 mb-2">KHARISMA MUDA</h4>
+                <p class="text-xs text-gray-500 mb-3 italic border-l-4 border-yellow-400 pl-2">
+                    "KHARISMA" adalah singkatan nama kami, dan "MUDA" merepresentasikan asal sekolah kami, <b>SDS Plus 2
+                        Al-Muhajirin</b>.
+                </p>
+
+                <h3 class="font-bold text-gray-800 mb-2 text-sm uppercase tracking-wide">Tim Pengembang:</h3>
+                <ul class="space-y-2">
+                    <li class="flex items-center gap-3 bg-white p-2 rounded-lg shadow-sm border border-gray-100">
+                        <div
+                            class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+                            H</div>
+                        <span class="font-medium text-gray-700">Haris Ratno Pambudi, S.T</span>
+                    </li>
+                    <li class="flex items-center gap-3 bg-white p-2 rounded-lg shadow-sm border border-gray-100">
+                        <div
+                            class="bg-pink-100 text-pink-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+                            N</div>
+                        <span class="font-medium text-gray-700">Nur Afifah Ramadhani, S.Pd</span>
+                    </li>
+                    <li class="flex items-center gap-3 bg-white p-2 rounded-lg shadow-sm border border-gray-100">
+                        <div
+                            class="bg-purple-100 text-purple-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+                            R</div>
+                        <span class="font-medium text-gray-700">Rahmayani Putri, S.Pd</span>
+                    </li>
+                </ul>
+            </div>
+
+            <p class="text-xs text-center text-gray-400">
+                Aplikasi ini dibuat sebagai media pembelajaran interaktif untuk mengenal dan menghitung mata uang
+                Rupiah.
+            </p>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="modal-overlay"
+        class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center transform scale-90 transition-transform duration-300"
+            id="modal-content">
+            <div id="modal-icon" class="text-6xl mb-4 animate-bounce"></div>
+            <h2 id="modal-title" class="text-3xl font-bold mb-2">Title</h2>
+            <p id="modal-message" class="text-gray-600 mb-6 text-lg">Message</p>
+            <button onclick="closeModal()"
+                class="bg-cyan-500 text-white text-xl font-bold py-3 px-8 rounded-full shadow-lg hover:bg-cyan-600 transition-colors w-full">
+                LANJUT MAIN
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Logic Script -->
+    <script>
+        // --- SOUND CONTROLLER (Web Audio API) ---
+        // Generates sounds using the browser's synthesizer. No external files needed.
+        const SoundController = {
+            ctx: null,
+            init: function () {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                } else if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+            playTone: function (freq, type, duration, delay = 0) {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime + delay);
+
+                // Attack and Decay
+                gain.gain.setValueAtTime(0, this.ctx.currentTime + delay);
+                gain.gain.linearRampToValueAtTime(0.1, this.ctx.currentTime + delay + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + delay + duration);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(this.ctx.currentTime + delay);
+                osc.stop(this.ctx.currentTime + delay + duration);
+            },
+            playClick: function () {
+                this.init();
+                // Short 'tick'
+                this.playTone(800, 'sine', 0.1);
+            },
+            playPaper: function () {
+                this.init();
+                // Softer 'pop'
+                this.playTone(400, 'triangle', 0.1);
+            },
+            playCoin: function () {
+                this.init();
+                // High metallic 'ting'
+                this.playTone(1500, 'sine', 0.1);
+                this.playTone(2000, 'sine', 0.3, 0.05);
+            },
+            playWin: function () {
+                this.init();
+                // Major arpeggio
+                this.playTone(523.25, 'triangle', 0.2, 0); // C5
+                this.playTone(659.25, 'triangle', 0.2, 0.15); // E5
+                this.playTone(783.99, 'triangle', 0.4, 0.30); // G5
+                this.playTone(1046.50, 'square', 0.6, 0.45); // C6
+            },
+            playError: function () {
+                this.init();
+                // Low descending buzz
+                this.playTone(150, 'sawtooth', 0.3, 0);
+                this.playTone(100, 'sawtooth', 0.4, 0.15);
+            }
+        };
+
+        // --- Data Configuration ---
+        const denominations = [
+            {
+                val: 100000,
+                label: '100.000',
+                type: 'paper',
+                img: 'assets/img/100000.png',
+                color: 'bg-gradient-to-br from-red-500 to-red-700',
+                text: 'text-white border-red-200'
+            },
+            {
+                val: 50000,
+                label: '50.000',
+                type: 'paper',
+                img: 'assets/img/50000.png',
+                color: 'bg-gradient-to-br from-blue-500 to-blue-700',
+                text: 'text-white border-blue-200'
+            },
+            {
+                val: 20000,
+                label: '20.000',
+                type: 'paper',
+                img: 'assets/img/20000.png',
+                color: 'bg-gradient-to-br from-green-500 to-green-700',
+                text: 'text-white border-green-200'
+            },
+            {
+                val: 10000,
+                label: '10.000',
+                type: 'paper',
+                img: 'assets/img/10000.png',
+                color: 'bg-gradient-to-br from-purple-500 to-purple-700',
+                text: 'text-white border-purple-200'
+            },
+            {
+                val: 5000,
+                label: '5.000',
+                type: 'paper',
+                img: 'assets/img/5000.png',
+                color: 'bg-gradient-to-br from-amber-500 to-amber-700',
+                text: 'text-white border-amber-200'
+            },
+            {
+                val: 2000,
+                label: '2.000',
+                type: 'paper',
+                img: 'assets/img/2000.png',
+                color: 'bg-gradient-to-br from-slate-400 to-slate-600',
+                text: 'text-white border-slate-200'
+            },
+            {
+                val: 1000,
+                label: '1.000',
+                type: 'coin',
+                img: 'assets/img/1000.png',
+                color: 'bg-gradient-to-br from-gray-200 to-gray-400',
+                text: 'text-gray-700 border-gray-400'
+            },
+            {
+                val: 500,
+                label: '500',
+                type: 'coin',
+                img: 'assets/img/500.png',
+                color: 'bg-gradient-to-br from-yellow-300 to-yellow-500',
+                text: 'text-yellow-900 border-yellow-600'
+            },
+            {
+                val: 200,
+                label: '200',
+                type: 'coin',
+                img: 'assets/img/200.png',
+                color: 'bg-gradient-to-br from-gray-300 to-gray-400',
+                text: 'text-gray-800 border-gray-400'
+            },
+            {
+                val: 100,
+                label: '100',
+                type: 'coin',
+                img: 'assets/img/100.png',
+                color: 'bg-gradient-to-br from-gray-300 to-gray-400',
+                text: 'text-gray-800 border-gray-400'
+            }
+        ];
+
+        // --- Game State ---
+        let currentTarget = 0;
+        let droppedTotal = 0;
+        let droppedItems = {};
+        let score = 0;
+        let lives = 3;
+        let currentLevel = 1;
+        let currentAllowed = [];
+
+        // --- Screen Management ---
+        function startGame() {
+            // Init Sound Context on user gesture
+            SoundController.init();
+            SoundController.playClick();
+
+            document.getElementById('start-screen').classList.add('hidden');
+            const gameView = document.getElementById('game-view');
+            gameView.classList.remove('hidden');
+            gameView.classList.add('flex');
+
+            initGame();
+        }
+
+        function showStartScreen() {
+            SoundController.playClick();
+            document.getElementById('game-view').classList.add('hidden');
+            document.getElementById('game-view').classList.remove('flex');
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+
+        function backToHome() {
+            SoundController.playClick();
+            showStartScreen();
+        }
+
+        function showAbout() {
+            SoundController.playClick();
+            document.getElementById('about-modal').classList.remove('hidden');
+        }
+
+        function closeAbout() {
+            SoundController.playClick();
+            document.getElementById('about-modal').classList.add('hidden');
+        }
+
+        // --- Core Logic ---
+        function initGame() {
+            renderSlots();
+            renderSourceMoney();
+            currentLevel = 1;
+            score = 0;
+            lives = 3;
+            startNewLevel();
+            updateLivesUI();
+        }
+
+        function startNewLevel() {
+            currentAllowed = [];
+
+            if (currentLevel === 1) {
+                // LEVEL 1 (EASY): No constraints
+                // Just match the amount using any money
+                const step = 5000;
+                currentTarget = (Math.floor(Math.random() * 5) + 1) * 10000;
+            }
+            else if (currentLevel <= 3) {
+                // LEVEL 2-3 (MEDIUM): Constraints with Small Bills
+                // LOGIC UPDATE: Filter out big bills (50k, 100k) to force "breaking money" feel.
+                // Only allow 1k - 20k bills.
+                const possible = denominations.filter(d => d.val >= 1000 && d.val <= 20000).map(d => d.val);
+
+                const count = Math.random() > 0.5 ? 2 : 3;
+                currentAllowed = shuffleArray(possible).slice(0, count);
+                currentAllowed.sort((a, b) => b - a);
+
+                // Construct target from these small bills
+                currentTarget = 0;
+
+                // 1. Force add one of each allowed type
+                currentAllowed.forEach(val => {
+                    currentTarget += val;
+                });
+
+                // 2. Add random extras (more extras to make the amount bigger but composed of small bills)
+                const extraItems = Math.floor(Math.random() * 4) + 2; // 2-5 extra items
+                for (let i = 0; i < extraItems; i++) {
+                    const randomAllowed = currentAllowed[Math.floor(Math.random() * currentAllowed.length)];
+                    currentTarget += randomAllowed;
+                }
+
+            } else {
+                // LEVEL 4+ (HARD): Constraints with Coins & Small Bills
+                // LOGIC UPDATE: Still restrict max bill to 20k to maintain difficulty.
+                // Pool: 100 - 20000 (Include coins)
+                const possible = denominations.filter(d => d.val <= 20000).map(d => d.val);
+
+                currentAllowed = shuffleArray(possible).slice(0, 4);
+                currentAllowed.sort((a, b) => b - a);
+
+                // Construct target
+                currentTarget = 0;
+
+                // 1. Force add one of each allowed type
+                currentAllowed.forEach(val => {
+                    currentTarget += val;
+                });
+
+                // 2. Add random extras
+                const extraItems = Math.floor(Math.random() * 6) + 2; // 2-7 extra items
+                for (let i = 0; i < extraItems; i++) {
+                    const randomAllowed = currentAllowed[Math.floor(Math.random() * currentAllowed.length)];
+                    currentTarget += randomAllowed;
+                }
+            }
+
+            document.getElementById('level-display').innerText = currentLevel;
+
+            droppedTotal = 0;
+            droppedItems = {};
+            denominations.forEach(d => droppedItems[d.val] = 0);
+
+            updateUI();
+            updateSlotsVisuals();
+            renderConstraintUI();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function renderConstraintUI() {
+            const area = document.getElementById('constraint-area');
+            const icons = document.getElementById('constraint-icons');
+            const defInstr = document.getElementById('default-instruction');
+
+            icons.innerHTML = '';
+
+            if (currentAllowed.length > 0) {
+                area.classList.remove('hidden');
+                defInstr.classList.add('hidden');
+
+                currentAllowed.forEach(val => {
+                    const d = denominations.find(x => x.val === val);
+
+                    // MODIFIED: Changed from Image/Icon to Text Badge
+                    const badge = document.createElement('span');
+                    badge.className = "bg-yellow-400 text-yellow-900 px-2 py-1 rounded-md text-xs md:text-sm font-bold shadow-sm border border-yellow-600";
+                    badge.innerText = `Rp ${d.label}`;
+
+                    icons.appendChild(badge);
+                });
+            } else {
+                area.classList.add('hidden');
+                defInstr.classList.remove('hidden');
+            }
+        }
+
+        function renderSlots() {
+            const container = document.getElementById('slots-container');
+            container.innerHTML = '';
+
+            denominations.forEach(denom => {
+                const slot = document.createElement('div');
+                // INCREASED SIZE: min-h-[120px] for mobile, md:min-h-[140px] for desktop
+                slot.className = `relative border-2 border-dashed border-gray-300 rounded-xl p-2 flex flex-col items-center justify-between min-h-[120px] md:min-h-[140px] bg-gray-50 transition-colors`;
+                slot.id = `slot-${denom.val}`;
+
+                slot.ondragover = (e) => {
+                    e.preventDefault();
+                    slot.classList.add('drop-zone-active');
+                };
+                slot.ondragleave = () => slot.classList.remove('drop-zone-active');
+                slot.ondrop = (e) => handleDrop(e, denom.val);
+                slot.onclick = () => {
+                    removeMoney(denom.val);
+                    SoundController.playClick(); // Sound on remove
+                };
+
+                const label = document.createElement('span');
+                // INCREASED TEXT SIZE: text-sm for mobile, md:text-base for desktop, added shadow-sm
+                label.className = `bg-gray-200 text-gray-600 px-2 py-1.5 rounded text-sm md:text-base font-bold mb-1 w-full text-center shadow-sm`;
+                label.innerText = denom.label;
+
+                const stack = document.createElement('div');
+                stack.id = `stack-${denom.val}`;
+                stack.className = 'flex-1 w-full flex items-center justify-center relative';
+
+                const counter = document.createElement('div');
+                counter.id = `count-${denom.val}`;
+                counter.className = `absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-md scale-0 transition-transform duration-200`;
+                counter.innerText = '0';
+
+                slot.appendChild(label);
+                slot.appendChild(stack);
+                slot.appendChild(counter);
+                container.appendChild(slot);
+            });
+        }
+
+        function renderSourceMoney() {
+            const container = document.getElementById('money-source');
+            container.innerHTML = '';
+
+            denominations.forEach(denom => {
+                const moneyEl = createMoneyElement(denom);
+                // Grid layout wrapper: center content
+                const wrapper = document.createElement('div');
+                wrapper.className = "flex items-center justify-center transform hover:-translate-y-2 transition-transform duration-200 w-full";
+
+                moneyEl.draggable = true;
+                moneyEl.ondragstart = (e) => {
+                    // Play sound on pickup? Maybe distraction. Let's just do it on drop.
+                    e.dataTransfer.setData("value", denom.val);
+                    e.dataTransfer.effectAllowed = "copy";
+                };
+                moneyEl.onclick = () => addMoney(denom.val);
+
+                wrapper.appendChild(moneyEl);
+                container.appendChild(wrapper);
+            });
+        }
+
+        function createMoneyElement(denom, isSmall = false) {
+            const el = document.createElement('div');
+
+            if (denom.img) {
+                const img = document.createElement('img');
+                img.src = denom.img;
+                img.alt = denom.label;
+                img.className = "w-full h-full object-contain filter drop-shadow-md select-none pointer-events-none";
+
+                el.className = `money-card flex items-center justify-center cursor-pointer select-none transition-transform`;
+
+                if (isSmall) {
+                    // Increased sizes for Storage Area (dropped items) as requested
+                    if (denom.type === 'paper') {
+                        el.style.width = '100px';
+                        el.style.height = '50px';
+                        // Add mobile responsive check if needed, but 100px fits 3-col grid on most phones
+                    } else {
+                        el.style.width = '50px';
+                        el.style.height = '50px';
+                    }
+                } else {
+                    // RESPONSIVE SIZING FOR TRAY
+                    // Use tailwind classes for width/height instead of fixed pixels
+                    // Paper: aspect ratio approx 2:1
+                    // Coin: aspect ratio 1:1
+
+                    if (denom.type === 'paper') {
+                        el.className += " w-full h-auto aspect-[2/1] max-w-[150px]";
+                    } else {
+                        el.className += " w-full h-auto aspect-square max-w-[80px]";
+                    }
+                }
+
+                el.appendChild(img);
+                return el;
+            }
+
+            if (denom.type === 'paper') {
+                el.className = `money-card money-paper ${denom.color} ${denom.text} flex items-center justify-center font-bold shadow-md border-2 select-none`;
+
+                // ADJUSTED SIZES:
+                // isSmall (for stacks/icons): 60x30px
+                // Normal (for bottom tray): Increased to 150x75px for better visibility
+                el.style.width = isSmall ? '60px' : '150px';
+                el.style.height = isSmall ? '30px' : '75px';
+
+                // Larger text for source money
+                el.innerHTML = `<span class="${isSmall ? 'text-[10px]' : 'text-lg md:text-xl'}">Rp${denom.label}</span>`;
+            } else {
+                el.className = `money-card money-coin ${denom.color} ${denom.text} flex items-center justify-center font-bold border-4 select-none`;
+
+                // ADJUSTED SIZES:
+                // isSmall (for stacks/icons): 30x30px
+                // Normal (for bottom tray): Increased to 80x80px
+                el.style.width = isSmall ? '30px' : '80px';
+                el.style.height = isSmall ? '30px' : '80px';
+
+                el.innerHTML = `<span class="${isSmall ? 'text-[8px]' : 'text-sm md:text-lg'}">${denom.label}</span>`;
+            }
+            return el;
+        }
+
+        // --- Interaction Logic ---
+        function handleDrop(e, slotVal) {
+            e.preventDefault();
+            const draggedVal = parseInt(e.dataTransfer.getData("value"));
+            document.getElementById(`slot-${slotVal}`).classList.remove('drop-zone-active');
+
+            if (draggedVal === slotVal) {
+                addMoney(draggedVal);
+            } else {
+                SoundController.playError(); // Wrong slot sound
+                const slot = document.getElementById(`slot-${slotVal}`);
+                slot.classList.add('bg-red-100');
+                setTimeout(() => slot.classList.remove('bg-red-100'), 200);
+            }
+        }
+
+        function addMoney(val) {
+            droppedTotal += val;
+            droppedItems[val]++;
+
+            // Play correct sound based on type
+            const denom = denominations.find(d => d.val === val);
+            if (denom && denom.type === 'coin') {
+                SoundController.playCoin();
+            } else {
+                SoundController.playPaper();
+            }
+
+            renderStackItem(val);
+            updateUI();
+        }
+
+        function removeMoney(val) {
+            if (droppedItems[val] > 0) {
+                droppedTotal -= val;
+                droppedItems[val]--;
+                updateSlotsVisuals();
+                updateUI();
+            }
+        }
+
+        function renderStackItem(val) {
+            const denom = denominations.find(d => d.val === val);
+            const stack = document.getElementById(`stack-${val}`);
+
+            const item = createMoneyElement(denom, true);
+            item.classList.add('pop-in', 'absolute');
+
+            const rotate = Math.floor(Math.random() * 20) - 10;
+            const offsetX = Math.floor(Math.random() * 10) - 5;
+            const offsetY = Math.floor(Math.random() * 10) - 5;
+
+            item.style.transform = `rotate(${rotate}deg) translate(${offsetX}px, ${offsetY}px)`;
+            item.style.zIndex = droppedItems[val];
+
+            stack.appendChild(item);
+
+            const counter = document.getElementById(`count-${val}`);
+            counter.innerText = droppedItems[val];
+            counter.classList.remove('scale-0');
+        }
+
+        function updateSlotsVisuals() {
+            denominations.forEach(denom => {
+                const stack = document.getElementById(`stack-${denom.val}`);
+                stack.innerHTML = '';
+
+                const count = droppedItems[denom.val];
+                const counter = document.getElementById(`count-${denom.val}`);
+                counter.innerText = count;
+
+                if (count === 0) {
+                    counter.classList.add('scale-0');
+                } else {
+                    counter.classList.remove('scale-0');
+                    for (let i = 0; i < count; i++) {
+                        const item = createMoneyElement(denom, true);
+                        item.classList.add('absolute');
+                        const rotate = Math.floor(Math.random() * 20) - 10;
+                        item.style.transform = `rotate(${rotate}deg)`;
+                        stack.appendChild(item);
+                    }
+                }
+            });
+        }
+
+        function updateUI() {
+            const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 });
+
+            document.getElementById('target-amount').innerText = formatter.format(currentTarget);
+            const currentTotalEl = document.getElementById('current-total');
+            currentTotalEl.innerText = formatter.format(droppedTotal);
+
+            if (droppedTotal === currentTarget) {
+                currentTotalEl.className = "text-green-400 font-mono text-3xl md:text-4xl text-right font-bold tracking-widest";
+            } else if (droppedTotal > currentTarget) {
+                currentTotalEl.className = "text-red-400 font-mono text-3xl md:text-4xl text-right font-bold tracking-widest";
+            } else {
+                currentTotalEl.className = "text-yellow-400 font-mono text-3xl md:text-4xl text-right font-bold tracking-widest";
+            }
+
+            document.getElementById('score').innerText = score;
+        }
+
+        function checkAnswer() {
+            SoundController.playClick();
+
+            if (droppedTotal !== currentTarget) {
+                SoundController.playError();
+                if (droppedTotal > currentTarget) {
+                    handleLoss('⚠️ KELEBIHAN!', 'Total uangmu melebihi yang diminta.', 'text-orange-500', '<i class="fas fa-exclamation-triangle"></i>');
+                } else {
+                    handleLoss('📉 KURANG!', 'Total uangmu masih kurang.', 'text-yellow-500', '<i class="fas fa-hand-holding-usd"></i>');
+                }
+                return;
+            }
+
+            if (currentAllowed.length > 0) {
+                let illegalItemFound = false;
+                let illegalName = '';
+
+                for (const [val, count] of Object.entries(droppedItems)) {
+                    if (count > 0 && !currentAllowed.includes(parseInt(val))) {
+                        illegalItemFound = true;
+                        const d = denominations.find(x => x.val == val);
+                        illegalName = d ? d.label : val;
+                        break;
+                    }
+                }
+
+                if (illegalItemFound) {
+                    SoundController.playError();
+                    handleLoss('🚫 PECAHAN SALAH!', `Totalnya pas, tapi kamu menggunakan pecahan <b>${illegalName}</b> yang dilarang di level ini!`, 'text-red-500', '<i class="fas fa-ban"></i>');
+                    return;
+                }
+            }
+
+            SoundController.playWin();
+            handleWin();
+        }
+
+        // --- Modals & Game Over ---
+        function handleWin() {
+            const bonus = 100 + (currentLevel * 10);
+            score += bonus;
+            currentLevel++;
+
+            showModal(
+                '🎉 BERHASIL!',
+                `Hebat! Jawabanmu benar. <br>Lanjut ke <b>Level ${currentLevel}</b>!`,
+                'text-green-500',
+                '<i class="fas fa-arrow-circle-up"></i>'
+            );
+        }
+
+        function handleLoss(title, msg, color, icon) {
+            lives--;
+            updateLivesUI();
+
+            if (lives <= 0) {
+                showModal(
+                    'GAME OVER',
+                    `Kesempatan habis.<br>Kamu bertahan sampai <b>Level ${currentLevel}</b>.<br>Skor Akhir: ${score}`,
+                    'text-red-600',
+                    '<i class="fas fa-skull"></i>',
+                    true
+                );
+            } else {
+                showModal(title, msg, color, icon);
+            }
+        }
+
+        function updateLivesUI() {
+            const container = document.getElementById('lives-container');
+            container.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const heart = document.createElement('i');
+                heart.className = `fas fa-heart text-2xl md:text-3xl drop-shadow-md ${i < lives ? 'text-red-500' : 'text-gray-400'}`;
+                container.appendChild(heart);
+            }
+        }
+
+        function showModal(title, message, colorClass, iconHtml, isReset = false) {
+            const modal = document.getElementById('modal-overlay');
+            const content = document.getElementById('modal-content');
+
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-title').className = `text-3xl font-bold mb-2 ${colorClass}`;
+            document.getElementById('modal-message').innerHTML = message;
+            document.getElementById('modal-icon').innerHTML = iconHtml;
+            document.getElementById('modal-icon').className = `text-6xl mb-4 animate-bounce ${colorClass}`;
+
+            modal.classList.remove('hidden');
+            content.classList.remove('scale-90');
+            content.classList.add('scale-100');
+
+            const btn = content.querySelector('button');
+            btn.onclick = () => {
+                SoundController.playClick();
+                closeModal();
+                if (isReset) {
+                    showStartScreen();
+                } else if (title === '🎉 BERHASIL!') {
+                    startNewLevel();
+                }
+            };
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal-overlay');
+            modal.classList.add('hidden');
+        }
+    </script>
+</body>
+
+</html>
