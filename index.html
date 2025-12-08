@@ -1099,12 +1099,47 @@
             if (window.FirebaseAPI && window.FirebaseAPI.db) {
                 try {
                     const { db, collection, getDocs, query, orderBy, limit } = window.FirebaseAPI;
-                    const q = query(collection(db, "leaderboard"), orderBy("level", "desc"), orderBy("avgTime", "asc"), limit(10));
+                    // Fech more (50) to account for potential duplicates we will filter out
+                    const q = query(collection(db, "leaderboard"), orderBy("level", "desc"), orderBy("avgTime", "asc"), limit(50));
                     const querySnapshot = await getDocs(q);
 
+                    let rawData = [];
                     querySnapshot.forEach((doc) => {
-                        lbData.push(doc.data());
+                        rawData.push(doc.data());
                     });
+
+                    // DEDUPLICATION LOGIC
+                    // Keep only the BEST score for each unique name (Case Insensitive)
+                    const uniqueMap = new Map();
+
+                    rawData.forEach(entry => {
+                        const key = entry.name.toLowerCase();
+                        if (!uniqueMap.has(key)) {
+                            uniqueMap.set(key, entry);
+                        } else {
+                            // If exists, compare and keep best
+                            const existing = uniqueMap.get(key);
+                            // Logic: Higher Level = Better. If Level Same, Low AvgTime = Better.
+                            if (entry.level > existing.level) {
+                                uniqueMap.set(key, entry);
+                            } else if (entry.level === existing.level && entry.avgTime < existing.avgTime) {
+                                uniqueMap.set(key, entry);
+                            }
+                        }
+                    });
+
+                    // Convert back to array
+                    lbData = Array.from(uniqueMap.values());
+
+                    // Sort again just to be safe (Client-side sort)
+                    lbData.sort((a, b) => {
+                        if (b.level !== a.level) return b.level - a.level;
+                        return a.avgTime - b.avgTime;
+                    });
+
+                    // Take Top 10
+                    lbData = lbData.slice(0, 10);
+
                 } catch (e) {
                     console.error("Firebase fetch failed:", e);
                     tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat data online.<br><span class="text-xs text-gray-400">${e.message}</span></td></tr>`;
