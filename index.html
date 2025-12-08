@@ -189,28 +189,29 @@
     </style>
 </head>
 
-<body class="h-screen w-screen flex flex-col relative">
+<body class="min-h-screen w-full flex flex-col relative overflow-x-hidden">
 
     <!-- START SCREEN -->
     <!-- MODIFIED: Changed bg-cyan-400 to a gradient class to match the theme -->
     <div id="start-screen"
-        class="absolute inset-0 z-50 bg-gradient-to-br from-emerald-400 via-cyan-500 to-blue-600 flex flex-col items-center justify-center p-4">
-        <div class="absolute inset-0 opacity-20 bg-pattern"></div>
+        class="absolute inset-0 z-50 bg-gradient-to-br from-emerald-400 via-cyan-500 to-blue-600 flex flex-col items-center justify-center p-4 overflow-y-auto">
+        <div class="absolute inset-0 opacity-20 bg-pattern pointer-events-none"></div>
 
         <!-- MOVED OUTSIDE: Title and Subtitle now separate from the instruction box -->
-        <div class="text-center z-10 mb-6 animate-float">
-            <h1 class="text-6xl md:text-8xl mb-2 typography-logo leading-tight drop-shadow-2xl">SIMAK<br>RUPIAH</h1>
+        <div class="text-center z-10 mb-4 md:mb-6 animate-float mt-8 md:mt-0">
+            <h1 class="text-5xl md:text-8xl mb-2 typography-logo leading-tight drop-shadow-2xl">SIMAK<br>RUPIAH</h1>
             <p
-                class="text-white text-base md:text-xl font-bold uppercase tracking-wider bg-black/20 backdrop-blur-sm py-2 px-6 rounded-full inline-block mx-auto border border-white/30 shadow-lg">
+                class="text-white text-xs md:text-xl font-bold uppercase tracking-wider bg-black/20 backdrop-blur-sm py-2 px-4 md:px-6 rounded-full inline-block mx-auto border border-white/30 shadow-lg">
                 (Simulasi Interaktif Mata Uang Rupiah)</p>
         </div>
 
         <div
-            class="bg-white/95 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-2xl max-w-md w-full text-center relative z-10 border-4 border-white/50 flex flex-col max-h-[60vh] overflow-y-auto">
+            class="bg-white/95 backdrop-blur-md p-4 md:p-8 rounded-3xl shadow-2xl max-w-md w-full text-center relative z-10 border-4 border-white/50 flex flex-col mb-8">
 
             <!-- Removed Title from here -->
 
-            <div class="bg-blue-50 rounded-xl p-4 text-left mb-6 border-2 border-blue-100 text-sm">
+            <div
+                class="bg-blue-50 rounded-xl p-3 md:p-4 text-left mb-4 md:mb-6 border-2 border-blue-100 text-xs md:text-sm">
                 <h3 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
                     <i class="fas fa-info-circle"></i> Cara Bermain:
                 </h3>
@@ -235,93 +236,98 @@
 
             <div class="space-y-3 w-full">
                 <button onclick="startGame()"
-                    class="w-full bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white text-xl md:text-2xl font-bold py-3 md:py-4 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+                    class="w-full bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white text-lg md:text-2xl font-bold py-3 md:py-4 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
                     <i class="fas fa-play"></i> MULAI MAIN
                 </button>
 
                 <button onclick="showAbout()"
-                    class="w-full bg-white hover:bg-gray-100 text-teal-600 border-2 border-teal-200 text-lg font-bold py-3 rounded-full shadow-md transform transition hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+                    class="w-full bg-white hover:bg-gray-100 text-teal-600 border-2 border-teal-200 text-base md:text-lg font-bold py-3 rounded-full shadow-md transform transition hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
                     <i class="fas fa-users"></i> TENTANG APLIKASI
                 </button>
             </div>
         </div>
 
-        <div class="mt-8 text-white/80 text-sm font-medium tracking-wider text-center">
+        <div class="mt-auto md:mt-8 text-white/80 text-xs md:text-sm font-medium tracking-wider text-center pb-4">
             KHARISMA MUDA &copy; 2025
         </div>
     </div>
 
     <!-- GAME VIEW WRAPPER -->
-    <div id="game-view" class="hidden flex-col h-full w-full">
+    <div id="game-view" class="hidden flex-col min-h-screen w-full">
 
         <!-- Header / Stats -->
-        <div class="h-16 w-full flex justify-between items-center px-4 md:px-6 pt-4 z-10 shrink-0 gap-2">
+        <div class="w-full flex justify-between items-center px-3 md:px-6 pt-2 z-10 shrink-0 gap-2">
             <div class="flex items-center gap-2">
                 <button onclick="backToHome()"
-                    class="bg-white/20 hover:bg-white/40 text-white p-2 rounded-full transition shadow-lg">
-                    <i class="fas fa-home text-lg"></i>
+                    class="bg-white/20 hover:bg-white/40 text-white p-1.5 md:p-2 rounded-full transition shadow-lg">
+                    <i class="fas fa-home text-sm md:text-base"></i>
                 </button>
 
-                <div id="lives-container" class="flex gap-1">
+                <div id="lives-container" class="flex gap-0.5 md:gap-1">
                     <!-- Hearts injected via JS -->
                 </div>
             </div>
 
             <div
-                class="bg-indigo-600 text-white px-3 md:px-5 py-1 rounded-lg font-bold shadow-lg border-2 border-indigo-400 text-sm md:text-base animate-pulse">
-                LEVEL <span id="level-display" class="text-yellow-300 text-lg md:text-xl ml-1">1</span>
+                class="bg-indigo-600 text-white px-2 md:px-4 py-0.5 md:py-1 rounded-lg font-bold shadow-lg border-2 border-indigo-400 text-xs md:text-sm animate-pulse whitespace-nowrap">
+                LEVEL <span id="level-display" class="text-yellow-300 text-sm md:text-lg ml-1">1</span>
             </div>
 
             <div
-                class="bg-yellow-400 text-yellow-900 px-3 md:px-6 py-2 rounded-full font-bold text-lg md:text-xl shadow-lg border-2 border-yellow-200 flex items-center gap-2">
-                <i class="fas fa-star"></i>
+                class="bg-yellow-400 text-yellow-900 px-2 md:px-4 py-0.5 md:py-1 rounded-full font-bold text-sm md:text-lg shadow-lg border-2 border-yellow-200 flex items-center gap-1 md:gap-2">
+                <i class="fas fa-star text-xs md:text-base"></i>
                 <span id="score">0</span>
             </div>
         </div>
 
         <!-- Main Game Area -->
-        <div class="flex-1 flex flex-col md:flex-row w-full max-w-7xl mx-auto p-4 gap-4 overflow-y-auto relative">
+        <div
+            class="flex-1 flex flex-col lg:flex-row w-full max-w-7xl mx-auto p-2 gap-2 relative pb-32 md:pb-40 lg:pb-56">
 
             <!-- Left Side: Drop Slots -->
-            <div class="w-full md:w-1/2 flex flex-col shrink-0">
+            <div class="w-full lg:w-1/2 flex flex-col shrink-0">
                 <!-- Added bg-money-pattern class here -->
                 <div
-                    class="bg-money-pattern rounded-2xl p-4 shadow-xl h-full min-h-[300px] flex flex-col border-4 border-white/50">
+                    class="bg-money-pattern rounded-2xl p-2 shadow-xl h-auto min-h-[200px] md:min-h-[250px] flex flex-col border-4 border-white/50">
                     <h3
-                        class="text-center text-green-800 font-bold mb-2 uppercase tracking-wider text-sm md:text-base bg-white/80 rounded-lg py-1 shadow-sm">
+                        class="text-center text-green-800 font-bold mb-1 uppercase tracking-wider text-[10px] md:text-sm bg-white/80 rounded-lg py-0.5 shadow-sm">
                         Area Penyimpanan Uang</h3>
-                    <!-- Modified Grid: 5 columns on desktop (md:grid-cols-5) for 16:9 proportion -->
-                    <div class="grid grid-cols-3 gap-2 md:gap-3 flex-1 content-center" id="slots-container">
+                    <!-- Modified Grid: Responsive columns, REMOVED overflow-y-auto to prevent scrollbar -->
+                    <div class="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-1 md:gap-2 content-start md:content-center"
+                        id="slots-container">
                         <!-- Slots injected via JS -->
                     </div>
                 </div>
             </div>
 
             <!-- Right Side: Interaction -->
-            <div class="w-full md:w-1/2 flex flex-col relative shrink-0">
+            <div class="w-full lg:w-1/2 flex flex-col relative shrink-0">
                 <!-- Added pt-10 (padding top) to prevent bubble clipping and ensure symmetry -->
-                <div class="flex-1 flex flex-col items-center justify-center relative min-h-[180px] pt-10 pb-4">
+                <div
+                    class="flex-1 flex flex-col items-center justify-center relative min-h-[120px] md:min-h-[150px] pt-2 md:pt-6 pb-1 md:pb-2">
 
                     <!-- Speech Bubble -->
                     <div
-                        class="relative bg-teal-700 text-white p-3 md:p-5 rounded-2xl shadow-xl border-4 border-teal-500 mb-2 max-w-md w-full text-center z-10">
-                        <p class="text-sm md:text-lg font-medium opacity-90">Saya ingin menukar uang:</p>
-                        <h2 class="text-2xl md:text-3xl font-bold text-yellow-300 my-1" id="target-amount">Rp 0</h2>
+                        class="relative bg-teal-700 text-white p-2 md:p-4 rounded-xl shadow-xl border-4 border-teal-500 mb-1 max-w-md w-full text-center z-10 mx-4">
+                        <p class="text-[10px] md:text-base font-medium opacity-90">Saya ingin menukar uang:</p>
+                        <h2 class="text-lg md:text-2xl font-bold text-yellow-300 my-0.5" id="target-amount">Rp 0</h2>
 
                         <div id="constraint-area"
-                            class="mt-1 bg-teal-800/60 p-1.5 rounded-lg border border-teal-500/50 hidden">
-                            <p class="text-sm md:text-base text-teal-200 mb-1 uppercase tracking-wide font-bold">Hanya
+                            class="mt-0.5 bg-teal-800/60 p-1 rounded-lg border border-teal-500/50 hidden">
+                            <p class="text-[10px] md:text-sm text-teal-200 mb-0.5 uppercase tracking-wide font-bold">
+                                Hanya
                                 gunakan pecahan:</p>
                             <div id="constraint-icons" class="flex justify-center flex-wrap gap-1"></div>
                         </div>
-                        <p id="default-instruction" class="text-[10px] md:text-xs opacity-80 mt-1">Geser uang ke slot
+                        <p id="default-instruction" class="text-[8px] md:text-[10px] opacity-80 mt-0.5">Geser uang ke
+                            slot
                             yang sesuai!</p>
                         <div
-                            class="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[15px] border-l-transparent border-t-[20px] border-t-teal-700 border-r-[15px] border-r-transparent">
+                            class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-t-[15px] border-t-teal-700 border-r-[10px] border-r-transparent">
                         </div>
                     </div>
 
-                    <div class="w-32 h-32 md:w-60 md:h-60 relative mt-1 mb-2">
+                    <div class="w-20 h-20 md:w-32 md:h-32 lg:w-40 lg:h-40 relative mt-1 mb-1 shrink-0">
                         <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-2xl">
                             <path d="M50,180 Q50,130 100,130 T150,180 V200 H50 Z" fill="#4B5563" />
                             <path d="M85,135 L100,155 L115,135" fill="white" stroke="none" />
@@ -336,15 +342,19 @@
                     </div>
                 </div>
 
-                <div class="h-auto bg-gray-200 rounded-t-3xl p-4 border-t-8 border-gray-300 shadow-2xl relative">
-                    <div class="bg-gray-800 rounded-lg p-3 mb-3 border-4 border-gray-600 shadow-inner">
-                        <div class="text-gray-400 text-xs font-mono uppercase text-right">Total Terkumpul</div>
-                        <div class="text-green-400 font-mono text-3xl md:text-4xl text-right font-bold tracking-widest"
+                <div
+                    class="h-auto bg-gray-200 rounded-t-2xl p-2 md:p-3 border-t-4 md:border-t-8 border-gray-300 shadow-2xl relative shrink-0">
+                    <div
+                        class="bg-gray-800 rounded-lg p-1.5 md:p-2 mb-1.5 md:mb-2 border-2 md:border-4 border-gray-600 shadow-inner">
+                        <div class="text-gray-400 text-[8px] md:text-[10px] font-mono uppercase text-right">Total
+                            Terkumpul
+                        </div>
+                        <div class="text-green-400 font-mono text-xl md:text-3xl text-right font-bold tracking-widest"
                             id="current-total">0</div>
                     </div>
 
                     <button onclick="checkAnswer()"
-                        class="w-full bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-2xl font-bold py-4 rounded-xl shadow-[0_4px_0_rgb(21,128,61)] active:shadow-none active:translate-y-1 transition-all flex items-center justify-center gap-3">
+                        class="w-full bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-base md:text-xl font-bold py-2 md:py-3 rounded-lg md:rounded-xl shadow-[0_3px_0_rgb(21,128,61)] active:shadow-none active:translate-y-1 transition-all flex items-center justify-center gap-2">
                         <i class="fas fa-cash-register"></i> TUKAR SEKARANG
                     </button>
                 </div>
@@ -353,12 +363,12 @@
 
         <!-- Bottom Tray -->
         <div
-            class="h-32 md:h-40 bg-gray-800/90 backdrop-blur-md w-full shadow-[0_-4px_10px_rgba(0,0,0,0.3)] z-20 flex flex-col shrink-0">
-            <div class="text-white text-xs text-center py-1 opacity-70 uppercase tracking-widest">
+            class="fixed bottom-0 left-0 h-20 md:h-28 lg:h-32 bg-gray-800/90 backdrop-blur-md w-full shadow-[0_-4px_10px_rgba(0,0,0,0.3)] z-50 flex flex-col shrink-0">
+            <div class="text-white text-[10px] md:text-xs text-center py-1 opacity-70 uppercase tracking-widest">
                 <i class="fas fa-hand-pointer mr-1"></i> Tarik uang dari sini atau klik untuk ambil
             </div>
             <!-- Added md:justify-center to center the money on larger screens -->
-            <div class="flex-1 flex items-center gap-4 overflow-x-auto px-6 pb-2 money-tray md:justify-center"
+            <div class="flex-1 flex items-center gap-2 md:gap-4 overflow-x-auto px-4 md:px-6 pb-2 money-tray lg:justify-center"
                 id="money-source">
                 <!-- Money injected via JS -->
             </div>
@@ -822,14 +832,13 @@
                 el.className = `money-card flex items-center justify-center cursor-pointer select-none transition-transform`;
 
                 if (isSmall) {
-                    // Increased sizes for Storage Area (dropped items) as requested
+                    // RESPONSIVE SIZING FOR DROPPED ITEMS
+                    // Use percentages or max-width to fit in slots
                     if (denom.type === 'paper') {
-                        el.style.width = '100px';
-                        el.style.height = '50px';
-                        // Add mobile responsive check if needed, but 100px fits 3-col grid on most phones
+                        // Mobile: smaller fixed size or percentage
+                        el.className += " w-[80px] h-[40px] md:w-[100px] md:h-[50px]";
                     } else {
-                        el.style.width = '50px';
-                        el.style.height = '50px';
+                        el.className += " w-[40px] h-[40px] md:w-[50px] md:h-[50px]";
                     }
                 } else {
                     // RESPONSIVE SIZING FOR TRAY
@@ -838,9 +847,9 @@
                     // Coin: aspect ratio 1:1
 
                     if (denom.type === 'paper') {
-                        el.className += " w-full h-auto aspect-[2/1] max-w-[150px]";
+                        el.className += " w-full h-auto aspect-[2/1] max-w-[120px] md:max-w-[150px]";
                     } else {
-                        el.className += " w-full h-auto aspect-square max-w-[80px]";
+                        el.className += " w-full h-auto aspect-square max-w-[60px] md:max-w-[80px]";
                     }
                 }
 
@@ -848,27 +857,28 @@
                 return el;
             }
 
+            // Fallback for no images
             if (denom.type === 'paper') {
                 el.className = `money-card money-paper ${denom.color} ${denom.text} flex items-center justify-center font-bold shadow-md border-2 select-none`;
 
-                // ADJUSTED SIZES:
-                // isSmall (for stacks/icons): 60x30px
-                // Normal (for bottom tray): Increased to 150x75px for better visibility
-                el.style.width = isSmall ? '60px' : '150px';
-                el.style.height = isSmall ? '30px' : '75px';
+                if (isSmall) {
+                    el.className += " w-[50px] h-[25px] md:w-[60px] md:h-[30px]";
+                } else {
+                    el.className += " w-[100px] h-[50px] md:w-[150px] md:h-[75px]";
+                }
 
                 // Larger text for source money
-                el.innerHTML = `<span class="${isSmall ? 'text-[10px]' : 'text-lg md:text-xl'}">Rp${denom.label}</span>`;
+                el.innerHTML = `<span class="${isSmall ? 'text-[8px]' : 'text-sm md:text-xl'}">Rp${denom.label}</span>`;
             } else {
                 el.className = `money-card money-coin ${denom.color} ${denom.text} flex items-center justify-center font-bold border-4 select-none`;
 
-                // ADJUSTED SIZES:
-                // isSmall (for stacks/icons): 30x30px
-                // Normal (for bottom tray): Increased to 80x80px
-                el.style.width = isSmall ? '30px' : '80px';
-                el.style.height = isSmall ? '30px' : '80px';
+                if (isSmall) {
+                    el.className += " w-[25px] h-[25px] md:w-[30px] md:h-[30px]";
+                } else {
+                    el.className += " w-[50px] h-[50px] md:w-[80px] md:h-[80px]";
+                }
 
-                el.innerHTML = `<span class="${isSmall ? 'text-[8px]' : 'text-sm md:text-lg'}">${denom.label}</span>`;
+                el.innerHTML = `<span class="${isSmall ? 'text-[6px]' : 'text-xs md:text-lg'}">${denom.label}</span>`;
             }
             return el;
         }
@@ -1059,15 +1069,22 @@
             const modal = document.getElementById('modal-overlay');
             const content = document.getElementById('modal-content');
 
+            // Responsive padding
+            content.className = "bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full text-center transform scale-90 transition-transform duration-300";
+
             document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-title').className = `text-3xl font-bold mb-2 ${colorClass}`;
+            document.getElementById('modal-title').className = `text-2xl md:text-3xl font-bold mb-2 ${colorClass}`;
             document.getElementById('modal-message').innerHTML = message;
+            document.getElementById('modal-message').className = "text-gray-600 mb-6 text-sm md:text-lg";
+
             document.getElementById('modal-icon').innerHTML = iconHtml;
-            document.getElementById('modal-icon').className = `text-6xl mb-4 animate-bounce ${colorClass}`;
+            document.getElementById('modal-icon').className = `text-5xl md:text-6xl mb-4 animate-bounce ${colorClass}`;
 
             modal.classList.remove('hidden');
-            content.classList.remove('scale-90');
-            content.classList.add('scale-100');
+            setTimeout(() => {
+                content.classList.remove('scale-90');
+                content.classList.add('scale-100');
+            }, 10);
 
             const btn = content.querySelector('button');
             btn.onclick = () => {
