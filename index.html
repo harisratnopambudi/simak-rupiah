@@ -413,17 +413,10 @@
                     </div>
 
                     <div class="w-20 h-20 md:w-32 md:h-32 lg:w-40 lg:h-40 relative mt-1 mb-1 shrink-0">
-                        <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-2xl">
-                            <path d="M50,180 Q50,130 100,130 T150,180 V200 H50 Z" fill="#4B5563" />
-                            <path d="M85,135 L100,155 L115,135" fill="white" stroke="none" />
-                            <circle cx="100" cy="90" r="45" fill="#FCA5A5" />
-                            <path d="M55,90 Q50,40 100,30 Q150,40 145,90 Q150,80 155,70 Q140,20 100,20 Q60,20 45,70 Z"
-                                fill="#1F2937" />
-                            <circle cx="85" cy="85" r="5" fill="#1F2937" />
-                            <circle cx="115" cy="85" r="5" fill="#1F2937" />
-                            <path d="M85,105 Q100,115 115,105" fill="none" stroke="#1F2937" stroke-width="3"
-                                stroke-linecap="round" />
-                        </svg>
+                        <div class="w-20 h-20 md:w-32 md:h-32 lg:w-40 lg:h-40 relative mt-1 mb-1 shrink-0">
+                            <img id="kiki-char" src="assets/img/char/char1.png" alt="Kiki Character"
+                                class="w-full h-full object-contain drop-shadow-2xl transition-transform duration-300 hover:scale-110">
+                        </div>
                     </div>
                 </div>
 
@@ -601,6 +594,8 @@
             measurementId: "G-VQEMNTKBBP"
         };
 
+
+
         // Initialize Firebase
         let app, db;
         try {
@@ -688,6 +683,26 @@
         };
 
         // --- Data Configuration ---
+        // NEW: Character Images for Randomization
+        const characterImages = [
+            'assets/img/char/char1.png',
+            'assets/img/char/char2.png',
+            'assets/img/char/char3.png',
+            'assets/img/char/char4.png'
+        ];
+
+        function updateCharacterImage() {
+            const charImg = document.getElementById('kiki-char');
+            if (charImg) {
+                const randomChar = characterImages[Math.floor(Math.random() * characterImages.length)];
+                charImg.src = randomChar;
+                // Add pop animation reset
+                charImg.classList.remove('animate-pop-in');
+                void charImg.offsetWidth; // Trigger reflow
+                charImg.classList.add('animate-pop-in');
+            }
+        }
+
         const denominations = [
             {
                 val: 100000,
@@ -872,6 +887,9 @@
 
         function startNewLevel() {
             currentAllowed = [];
+
+            // NEW: Randomize Character
+            updateCharacterImage();
 
             if (currentLevel === 1) {
                 // LEVEL 1 (EASY): No constraints
