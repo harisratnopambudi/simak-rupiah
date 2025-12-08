@@ -1038,7 +1038,7 @@
                     });
                 } catch (e) {
                     console.error("Firebase fetch failed:", e);
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat data online.<br>Cek Config Firebase Anda.</td></tr>';
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat data online.<br><span class="text-xs text-gray-400">${e.message}</span></td></tr>`;
                     return;
                 }
             } else {
