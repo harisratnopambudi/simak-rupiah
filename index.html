@@ -566,6 +566,49 @@
         </div>
     </div>
 
+    </div>
+
+    <!-- FIREBASE SDK & CONFIG -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC0WuC0FtjfJjYM_gZ2QY13iYEbAqo1N04",
+            authDomain: "fir-config-9170d.firebaseapp.com",
+            projectId: "fir-config-9170d",
+            storageBucket: "fir-config-9170d.firebasestorage.app",
+            messagingSenderId: "500458019532",
+            appId: "1:500458019532:web:685d46fd4ea81ee57d0069",
+            measurementId: "G-VQEMNTKBBP"
+        };
+
+        // Initialize Firebase
+        let app, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            console.log("Firebase initialized");
+        } catch (e) {
+            console.error("Firebase init failed (Did you set the config?):", e);
+        }
+
+        // Expose Firestore functions to global scope for the main script to use
+        window.FirebaseAPI = {
+            db,
+            collection,
+            addDoc,
+            getDocs,
+            query,
+            orderBy,
+            limit,
+            setDoc,
+            doc
+        };
+    </script>
+
     <!-- Main Logic Script -->
     <script>
         // --- SOUND CONTROLLER (Web Audio API) ---
@@ -937,12 +980,14 @@
         }
 
         // --- Leaderboard Functions ---
-        const LB_KEY = 'simakRupiahLeaderboard';
+        // OLD: LocalStorage Key
+        // const LB_KEY = 'simakRupiahLeaderboard'; 
 
-        function saveToLeaderboard() {
+        async function saveToLeaderboard() {
             const avgTime = sessionLevelsCleared > 0 ? (sessionTotalTime / sessionLevelsCleared).toFixed(1) : 0;
             const pName = playerName || "Anonim";
 
+            // Prepare Data
             const entry = {
                 name: pName,
                 level: currentLevel,
@@ -950,60 +995,63 @@
                 date: new Date().toISOString()
             };
 
-            let lb = getLeaderboard();
+            // TRY FIREBASE FIRST
+            if (window.FirebaseAPI && window.FirebaseAPI.db) {
+                try {
+                    const { db, setDoc, doc, collection } = window.FirebaseAPI;
+                    // Use Name as Doc ID for automatic deduplication (Upsert)
+                    // Sanitize name for Doc ID (remove special chars if needed, or just use as is)
+                    const docId = pName.replace(/\//g, "_");
 
-            // CLEANUP: Remove ANY existing entries with this name (Case Insensitive)
-            lb = lb.filter(item => item.name.toLowerCase() !== pName.toLowerCase());
-
-            // Add new entry
-            lb.push(entry);
-
-            // Sort: High Level desc, Low Avg Time asc
-            lb.sort((a, b) => {
-                if (b.level !== a.level) return b.level - a.level;
-                return a.avgTime - b.avgTime;
-            });
-
-            // Keep Top 10
-            const top10 = lb.slice(0, 10);
-            localStorage.setItem(LB_KEY, JSON.stringify(top10));
-        }
-
-        function getLeaderboard() {
-            const data = localStorage.getItem(LB_KEY);
-            return data ? JSON.parse(data) : [];
-        }
-
-        function showLeaderboardUI() {
-            let lb = getLeaderboard();
-
-            // DEDUPLICATE: Keep only the best entry for each name
-            // Since lb is sorted by Rank (Level desc, Time asc) when saved, 
-            // the first occurrence of a name is the best one.
-            const uniqueLb = [];
-            const seenNames = new Set();
-
-            lb.forEach(entry => {
-                const lowerName = entry.name.toLowerCase();
-                if (!seenNames.has(lowerName)) {
-                    seenNames.add(lowerName);
-                    uniqueLb.push(entry);
+                    await setDoc(doc(db, "leaderboard", docId), entry);
+                    console.log("Score saved to Firebase!");
+                    return; // Exit if successful
+                } catch (e) {
+                    console.error("Firebase save failed:", e);
+                    // Fallback to local?
                 }
-            });
-
-            // If duplicates were removed, update storage
-            if (uniqueLb.length !== lb.length) {
-                localStorage.setItem(LB_KEY, JSON.stringify(uniqueLb));
-                lb = uniqueLb;
+            } else {
+                console.warn("Firebase not configured. Score not saved globally.");
             }
 
-            const tbody = document.getElementById('lb-body');
-            tbody.innerHTML = '';
+            // FALLBACK: Local Storage (Legacy)
+            // ... (Keep existing local logic as offline backup if needed, or just warn)
+            alert("Leaderboard Online belum aktif. Pasang Config dulu!");
+        }
 
-            if (lb.length === 0) {
+        async function showLeaderboardUI() {
+            const tbody = document.getElementById('lb-body');
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-blue-500"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>';
+            document.getElementById('leaderboard-modal').classList.remove('hidden');
+
+            let lbData = [];
+
+            // TRY FIREBASE FETCH
+            if (window.FirebaseAPI && window.FirebaseAPI.db) {
+                try {
+                    const { db, collection, getDocs, query, orderBy, limit } = window.FirebaseAPI;
+                    const q = query(collection(db, "leaderboard"), orderBy("level", "desc"), orderBy("avgTime", "asc"), limit(10));
+                    const querySnapshot = await getDocs(q);
+
+                    querySnapshot.forEach((doc) => {
+                        lbData.push(doc.data());
+                    });
+                } catch (e) {
+                    console.error("Firebase fetch failed:", e);
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat data online.<br>Cek Config Firebase Anda.</td></tr>';
+                    return;
+                }
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Firebase belum dikonfigurasi.</td></tr>';
+                return;
+            }
+
+            // RENDER
+            tbody.innerHTML = '';
+            if (lbData.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Belum ada data peringkat.</td></tr>';
             } else {
-                lb.forEach((entry, idx) => {
+                lbData.forEach((entry, idx) => {
                     let rankDisplay;
                     if (idx === 0) rankDisplay = '<span class="text-2xl">🥇</span>';
                     else if (idx === 1) rankDisplay = '<span class="text-2xl">🥈</span>';
@@ -1021,8 +1069,6 @@
                     tbody.innerHTML += row;
                 });
             }
-
-            document.getElementById('leaderboard-modal').classList.remove('hidden');
         }
 
         function closeLeaderboard() {
