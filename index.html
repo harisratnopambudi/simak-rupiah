@@ -498,7 +498,19 @@
                 Aplikasi ini dibuat sebagai media pembelajaran interaktif untuk mengenal dan menghitung mata uang
                 Rupiah.
             </p>
-            <p class="text-xs text-center text-gray-400 mt-1">
+            </p>
+
+            <div class="mt-4 bg-blue-50 p-3 rounded-xl border border-blue-100 text-left">
+                <h3 class="font-bold text-blue-800 text-sm mb-1"><i class="fas fa-info-circle mr-1"></i> Tips Bermain:
+                </h3>
+                <ul class="text-xs text-blue-700 list-disc list-inside space-y-1">
+                    <li>Kamu punya waktu <b>60 detik</b> per level.</li>
+                    <li>Klik tombol <b>Home (🏠)</b> untuk simpan progress & keluar.</li>
+                    <li>Namamu akan otomatis masuk <b>Leaderboard</b>!</li>
+                </ul>
+            </div>
+
+            <p class="text-xs text-center text-gray-400 mt-4">
                 Dibuat dengan ❤️ untuk pendidikan Indonesia.
             </p>
         </div>
@@ -759,13 +771,14 @@
         let currentTarget = 0;
         let droppedTotal = 0;
         let droppedItems = {};
-        // --- INITIALIZATION ---
-        let lives = 3;
-        let score = 0;
+        // --- GLOBAL VARIABLES ---
         let currentLevel = 1;
-        let playerName = ""; // NEW: Store player name
+        let score = 0;
+        let lives = 3;
+        let playerName = "";
+        let isGameActive = false; // Track if game is running for auto-save
 
-        // Stats for Leaderboard
+        // Session Stats
         let sessionTotalTime = 0;
         let sessionLevelsCleared = 0;
 
@@ -811,9 +824,11 @@
             gameView.classList.remove('hidden');
             gameView.classList.add('flex');
             initGame();
+            isGameActive = true; // Mark game as active
         }
 
         function showStartScreen() {
+            isGameActive = false; // Game ended or returned to home
             stopTimer(); // Ensure timer stops on exit
             SoundController.playClick();
             document.getElementById('game-view').classList.add('hidden');
@@ -980,8 +995,12 @@
         }
 
         // --- Leaderboard Functions ---
-        // OLD: LocalStorage Key
-        // const LB_KEY = 'simakRupiahLeaderboard'; 
+        const LB_KEY = 'simakRupiahLeaderboard';
+
+        function getLeaderboard() {
+            const lb = localStorage.getItem(LB_KEY);
+            return lb ? JSON.parse(lb) : [];
+        }
 
         async function saveToLeaderboard() {
             const avgTime = sessionLevelsCleared > 0 ? (sessionTotalTime / sessionLevelsCleared).toFixed(1) : 0;
@@ -995,28 +1014,34 @@
                 date: new Date().toISOString()
             };
 
-            // TRY FIREBASE FIRST
+            // 1. ALWAYS SAVE LOCAL FIRST (Synchronous & Fast)
+            // This guarantees data is saved even if the tab closes immediately or Firebase fails.
+            let lb = getLeaderboard();
+            lb = lb.filter(item => item.name.toLowerCase() !== pName.toLowerCase()); // Cleanup duplicates
+            lb.push(entry);
+            lb.sort((a, b) => {
+                if (b.level !== a.level) return b.level - a.level;
+                return a.avgTime - b.avgTime;
+            });
+            const top10 = lb.slice(0, 10);
+            localStorage.setItem(LB_KEY, JSON.stringify(top10));
+
+
+            // 2. TRY FIREBASE (Async - Fire and Forget on Close)
             if (window.FirebaseAPI && window.FirebaseAPI.db) {
                 try {
                     const { db, setDoc, doc, collection } = window.FirebaseAPI;
                     // Use Name as Doc ID for automatic deduplication (Upsert)
-                    // Sanitize name for Doc ID (remove special chars if needed, or just use as is)
                     const docId = pName.replace(/\//g, "_");
 
                     await setDoc(doc(db, "leaderboard", docId), entry);
                     console.log("Score saved to Firebase!");
-                    return; // Exit if successful
                 } catch (e) {
                     console.error("Firebase save failed:", e);
-                    // Fallback to local?
                 }
             } else {
                 console.warn("Firebase not configured. Score not saved globally.");
             }
-
-            // FALLBACK: Local Storage (Legacy)
-            // ... (Keep existing local logic as offline backup if needed, or just warn)
-            alert("Leaderboard Online belum aktif. Pasang Config dulu!");
         }
 
         async function showLeaderboardUI() {
@@ -1042,8 +1067,12 @@
                     return;
                 }
             } else {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Firebase belum dikonfigurasi.</td></tr>';
-                return;
+                // FALLBACK: Local Storage
+                lbData = getLeaderboard();
+                if (lbData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Firebase belum dikonfigurasi atau data lokal kosong.</td></tr>';
+                    return;
+                }
             }
 
             // RENDER
