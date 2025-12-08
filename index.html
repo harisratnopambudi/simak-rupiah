@@ -222,29 +222,35 @@
 <body class="min-h-screen w-full flex flex-col relative overflow-x-hidden">
 
     <!-- START SCREEN -->
-    <!-- MODIFIED: Changed bg-cyan-400 to a gradient class to match the theme -->
-    <div id="start-screen"
-        class="absolute inset-0 z-50 bg-gradient-to-br from-emerald-400 via-cyan-500 to-blue-600 flex flex-col items-center justify-center p-4 overflow-y-auto">
+    <!-- GLOBAL BACKGROUND (Moved from start-screen) -->
+    <div id="global-bg" class="absolute inset-0 z-[-1] bg-gradient-to-br from-emerald-400 via-cyan-500 to-blue-600">
         <div class="absolute inset-0 opacity-20 bg-pattern pointer-events-none"></div>
+    </div>
 
-        <!-- NEW: Floating Money Container -->
-        <div id="floating-money-container" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
+    <!-- GLOBAL ANIMATION CONTAINER -->
+    <div id="floating-money-container" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
+
+    <!-- MODIFIED: Start screen is now transparent wrapper for content -->
+    <div id="start-screen" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-4 overflow-y-auto">
+
+
+
 
         <!-- MOVED OUTSIDE: Title and Subtitle now separate from the instruction box -->
-        <div class="text-center z-10 mb-4 md:mb-6 animate-float mt-8 md:mt-0">
-            <h1 class="text-5xl md:text-8xl mb-2 typography-logo leading-tight drop-shadow-2xl">SIMAK<br>RUPIAH</h1>
+        <div class="text-center z-10 mb-2 md:mb-4 animate-float mt-4 md:mt-0">
+            <h1 class="text-4xl md:text-7xl mb-1 typography-logo leading-tight drop-shadow-2xl">SIMAK<br>RUPIAH</h1>
             <p
-                class="text-white text-xs md:text-xl font-bold uppercase tracking-wider bg-black/20 backdrop-blur-sm py-2 px-4 md:px-6 rounded-full inline-block mx-auto border border-white/30 shadow-lg">
+                class="text-white text-[10px] md:text-base font-bold uppercase tracking-wider bg-black/20 backdrop-blur-sm py-1.5 px-3 md:px-5 rounded-full inline-block mx-auto border border-white/30 shadow-lg">
                 (Simulasi Interaktif Mata Uang Rupiah)</p>
         </div>
 
         <div
-            class="bg-white/95 backdrop-blur-md p-4 md:p-8 rounded-3xl shadow-2xl max-w-md w-full text-center relative z-10 border-4 border-white/50 flex flex-col mb-8">
+            class="bg-white/95 backdrop-blur-md p-3 md:p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center relative z-10 border-4 border-white/50 flex flex-col mb-4">
 
             <!-- Removed Title from here -->
 
             <div
-                class="bg-blue-50 rounded-xl p-3 md:p-4 text-left mb-4 md:mb-6 border-2 border-blue-100 text-xs md:text-sm">
+                class="bg-blue-50 rounded-xl p-2 md:p-3 text-left mb-3 md:mb-5 border-2 border-blue-100 text-[10px] md:text-xs">
                 <h3 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
                     <i class="fas fa-info-circle"></i> Cara Bermain:
                 </h3>
@@ -268,14 +274,29 @@
             </div>
 
             <div class="space-y-3 w-full">
-                <button onclick="startGame()"
-                    class="w-full bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white text-lg md:text-2xl font-bold py-3 md:py-4 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+                <!-- NEW: Name Input Field -->
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                        <i class="fas fa-user text-gray-400"></i>
+                    </div>
+                    <input type="text" id="player-name-input"
+                        class="w-full pl-10 pr-4 py-2 md:py-3 rounded-full border-2 border-gray-200 focus:border-teal-400 focus:ring focus:ring-teal-200 transition text-center text-sm md:text-lg font-bold text-teal-800 placeholder-gray-400"
+                        placeholder="Ketikan namamu di sini..." autocomplete="off">
+                </div>
+
+                <button onclick="checkNameAndStart()"
+                    class="w-full bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white text-base md:text-xl font-bold py-2 md:py-3 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
                     <i class="fas fa-play"></i> MULAI MAIN
                 </button>
 
                 <button onclick="showAbout()"
-                    class="w-full bg-white hover:bg-gray-100 text-teal-600 border-2 border-teal-200 text-base md:text-lg font-bold py-3 rounded-full shadow-md transform transition hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+                    class="w-full bg-white hover:bg-gray-100 text-teal-600 border-2 border-teal-200 text-sm md:text-base font-bold py-2 md:py-3 rounded-full shadow-md transform transition hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
                     <i class="fas fa-users"></i> TENTANG APLIKASI
+                </button>
+
+                <button onclick="showLeaderboardUI()"
+                    class="w-full bg-yellow-100 hover:bg-yellow-200 text-yellow-700 border-2 border-yellow-400 text-sm md:text-base font-bold py-2 md:py-3 rounded-full shadow-md transform transition hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fas fa-trophy"></i> PAPAN PERINGKAT
                 </button>
             </div>
         </div>
@@ -301,9 +322,21 @@
                     <i class="fas fa-volume-up text-sm md:text-base"></i>
                 </button>
 
+                <!-- NEW: Greeting Display -->
+                <div id="greeting-display"
+                    class="hidden md:flex items-center px-3 py-1 bg-white/20 rounded-full text-white text-xs md:text-sm font-bold border border-white/20 whitespace-nowrap">
+                    Halo, <span id="player-name-display" class="ml-1 text-yellow-300">Player</span>!
+                </div>
+
                 <div id="lives-container" class="flex gap-0.5 md:gap-1">
                     <!-- Hearts injected via JS -->
                 </div>
+            </div>
+
+            <!-- Timer Display -->
+            <div id="timer-display"
+                class="font-bold text-xl md:text-2xl text-white drop-shadow-md bg-black/20 px-3 py-1 rounded-lg border border-white/20">
+                01:00
             </div>
 
             <div
@@ -490,6 +523,49 @@
     <audio id="bg-music" loop preload="auto" autoplay src="assets/music/music-bg.mp3"
         onerror="alert('Error loading music file: ' + this.error.code)"></audio>
 
+    <!-- LEADERBOARD MODAL -->
+    <div id="leaderboard-modal"
+        class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div
+            class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100 border-4 border-yellow-400">
+            <!-- Header -->
+            <div class="bg-yellow-400 p-4 text-center relative">
+                <h2 class="text-2xl font-black text-yellow-900 uppercase tracking-wide drop-shadow-md">
+                    <i class="fas fa-trophy text-white mr-2"></i> Papan Peringkat
+                </h2>
+                <button onclick="closeLeaderboard()"
+                    class="absolute top-4 right-4 text-yellow-800 hover:text-white transition">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 max-h-[60vh] overflow-y-auto">
+                <table class="w-full text-sm md:text-base">
+                    <thead class="bg-yellow-50 text-yellow-800 mb-2">
+                        <tr>
+                            <th class="py-2 px-2 rounded-l-lg">Rank</th>
+                            <th class="py-2 px-2 text-left">Nama</th>
+                            <th class="py-2 px-2">Level</th>
+                            <th class="py-2 px-2 rounded-r-lg">Waktu (Rata²)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lb-body" class="divide-y divide-gray-100">
+                        <!-- Rows injected via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer -->
+            <div class="bg-gray-50 p-4 text-center">
+                <button onclick="closeLeaderboard()"
+                    class="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full font-bold shadow-lg transition transform hover:scale-105">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Logic Script -->
     <script>
         // --- SOUND CONTROLLER (Web Audio API) ---
@@ -640,27 +716,62 @@
         let currentTarget = 0;
         let droppedTotal = 0;
         let droppedItems = {};
-        let score = 0;
+        // --- INITIALIZATION ---
         let lives = 3;
+        let score = 0;
         let currentLevel = 1;
-        let currentAllowed = [];
+        let playerName = ""; // NEW: Store player name
+
+        // Stats for Leaderboard
+        let sessionTotalTime = 0;
+        let sessionLevelsCleared = 0;
 
         // --- Screen Management ---
+        function checkNameAndStart() {
+            const input = document.getElementById('player-name-input');
+            const name = input.value.trim();
+
+            if (!name) {
+                // Shake animation or alert
+                input.classList.add('animate-bounce'); // Simple shake replacement
+                input.classList.add('border-red-500');
+                SoundController.playError();
+                setTimeout(() => {
+                    input.classList.remove('animate-bounce');
+                    input.classList.remove('border-red-500');
+                }, 1000);
+                return;
+            }
+
+            playerName = name;
+            startGame();
+        }
+
         function startGame() {
+            // Reset Stats
+            sessionTotalTime = 0;
+            sessionLevelsCleared = 0;
+
             // Init Sound Context on user gesture
             SoundController.init();
             SoundController.playClick();
             playBackgroundMusic(); // NEW: Start Music
 
+            // Update Greeting
+            const greetingName = document.getElementById('player-name-display');
+            if (greetingName) greetingName.textContent = playerName;
+            const mobileGreeting = document.getElementById('greeting-display');
+            // Optional: Show greeting on mobile via simpler UI if needed, currently hidden on small screens per HTML
+
             document.getElementById('start-screen').classList.add('hidden');
             const gameView = document.getElementById('game-view');
             gameView.classList.remove('hidden');
             gameView.classList.add('flex');
-
             initGame();
         }
 
         function showStartScreen() {
+            stopTimer(); // Ensure timer stops on exit
             SoundController.playClick();
             document.getElementById('game-view').classList.add('hidden');
             document.getElementById('game-view').classList.remove('flex');
@@ -668,6 +779,10 @@
         }
 
         function backToHome() {
+            stopTimer();
+            // NEW: Save progress to leaderboard on exit
+            saveToLeaderboard();
+
             SoundController.playClick();
             showStartScreen();
         }
@@ -761,8 +876,160 @@
             updateUI();
             updateSlotsVisuals();
             renderConstraintUI();
+
+            startTimer(); // Start 20s timer
         }
 
+        // --- Timer Logic ---
+        let levelTimer;
+        let timeLeft = 60;
+
+        function startTimer() {
+            clearInterval(levelTimer);
+            timeLeft = 60;
+            updateTimerUI();
+
+            levelTimer = setInterval(() => {
+                timeLeft--;
+                updateTimerUI();
+                if (timeLeft <= 0) {
+                    clearInterval(levelTimer);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(levelTimer);
+        }
+
+        function updateTimerUI() {
+            const el = document.getElementById('timer-display');
+            if (el) {
+                // Calculate minutes and seconds
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                el.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                if (timeLeft <= 10) {
+                    el.classList.add('text-red-400', 'animate-pulse');
+                    el.classList.remove('text-white');
+                } else {
+                    el.classList.remove('text-red-400', 'animate-pulse');
+                    el.classList.add('text-white');
+                }
+            }
+        }
+
+        function handleTimeout() {
+            // Play error sound?
+            SoundController.playError();
+
+            // Note: Timeout acts as a loss of life, not game over unless lives run out.
+            // Stats are not impacted here, only on Win.
+
+            handleLoss(
+                "WAKTU HABIS!",
+                "Kamu kehabisan waktu!<br>Ayo lebih cepat lagi.",
+                "text-orange-500",
+                '<i class="fas fa-hourglass-end"></i>'
+            );
+        }
+
+        // --- Leaderboard Functions ---
+        const LB_KEY = 'simakRupiahLeaderboard';
+
+        function saveToLeaderboard() {
+            const avgTime = sessionLevelsCleared > 0 ? (sessionTotalTime / sessionLevelsCleared).toFixed(1) : 0;
+            const pName = playerName || "Anonim";
+
+            const entry = {
+                name: pName,
+                level: currentLevel,
+                avgTime: parseFloat(avgTime),
+                date: new Date().toISOString()
+            };
+
+            let lb = getLeaderboard();
+
+            // CLEANUP: Remove ANY existing entries with this name (Case Insensitive)
+            lb = lb.filter(item => item.name.toLowerCase() !== pName.toLowerCase());
+
+            // Add new entry
+            lb.push(entry);
+
+            // Sort: High Level desc, Low Avg Time asc
+            lb.sort((a, b) => {
+                if (b.level !== a.level) return b.level - a.level;
+                return a.avgTime - b.avgTime;
+            });
+
+            // Keep Top 10
+            const top10 = lb.slice(0, 10);
+            localStorage.setItem(LB_KEY, JSON.stringify(top10));
+        }
+
+        function getLeaderboard() {
+            const data = localStorage.getItem(LB_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function showLeaderboardUI() {
+            let lb = getLeaderboard();
+
+            // DEDUPLICATE: Keep only the best entry for each name
+            // Since lb is sorted by Rank (Level desc, Time asc) when saved, 
+            // the first occurrence of a name is the best one.
+            const uniqueLb = [];
+            const seenNames = new Set();
+
+            lb.forEach(entry => {
+                const lowerName = entry.name.toLowerCase();
+                if (!seenNames.has(lowerName)) {
+                    seenNames.add(lowerName);
+                    uniqueLb.push(entry);
+                }
+            });
+
+            // If duplicates were removed, update storage
+            if (uniqueLb.length !== lb.length) {
+                localStorage.setItem(LB_KEY, JSON.stringify(uniqueLb));
+                lb = uniqueLb;
+            }
+
+            const tbody = document.getElementById('lb-body');
+            tbody.innerHTML = '';
+
+            if (lb.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Belum ada data peringkat.</td></tr>';
+            } else {
+                lb.forEach((entry, idx) => {
+                    let rankDisplay;
+                    if (idx === 0) rankDisplay = '<span class="text-2xl">🥇</span>';
+                    else if (idx === 1) rankDisplay = '<span class="text-2xl">🥈</span>';
+                    else if (idx === 2) rankDisplay = '<span class="text-2xl">🥉</span>';
+                    else rankDisplay = `<span class="font-bold text-blue-600">#${idx + 1}</span>`;
+
+                    const row = `
+                        <tr class="border-b border-gray-100 last:border-0 hover:bg-blue-50">
+                            <td class="py-2 px-2 text-center">${rankDisplay}</td>
+                            <td class="py-2 px-2 font-medium text-gray-800 truncate max-w-[100px]">${entry.name}</td>
+                            <td class="py-2 px-2 text-center text-gray-600">${entry.level}</td>
+                            <td class="py-2 px-2 text-center text-gray-600">${entry.avgTime}s</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            }
+
+            document.getElementById('leaderboard-modal').classList.remove('hidden');
+        }
+
+        function closeLeaderboard() {
+            document.getElementById('leaderboard-modal').classList.add('hidden');
+        }
+
+        // --- Helper Functions ---
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -1069,6 +1336,13 @@
 
         // --- Modals & Game Over ---
         function handleWin() {
+            stopTimer(); // Stop timer on win
+
+            // Track Stats
+            const timeUsed = 60 - timeLeft;
+            sessionTotalTime += timeUsed;
+            sessionLevelsCleared++;
+
             const bonus = 100 + (currentLevel * 10);
             score += bonus;
             currentLevel++;
@@ -1082,10 +1356,14 @@
         }
 
         function handleLoss(title, msg, colorClass, iconHtml) {
+            stopTimer(); // Stop timer on loss/timeout
             lives--;
             updateLivesUI();
 
             if (lives <= 0) {
+                // Game Over - Save Score
+                saveToLeaderboard();
+
                 showModal(
                     'GAME OVER',
                     `Kesempatan habis.<br>Kamu bertahan sampai <b>Level ${currentLevel}</b>.<br>Skor Akhir: ${score}`,
@@ -1135,7 +1413,7 @@
                 closeModal();
                 if (isReset) {
                     showStartScreen();
-                } else if (title === '🎉 BERHASIL!') {
+                } else if (title === '🎉 BERHASIL!' || title === 'WAKTU HABIS!') {
                     startNewLevel();
                 }
             };
