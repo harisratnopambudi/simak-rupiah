@@ -581,7 +581,8 @@
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, getDoc, query, orderBy, limit, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -616,6 +617,7 @@
             orderBy,
             limit,
             setDoc,
+            getDoc,
             doc
         };
     </script>
@@ -1049,15 +1051,35 @@
             localStorage.setItem(LB_KEY, JSON.stringify(top10));
 
 
-            // 2. TRY FIREBASE (Async - Fire and Forget on Close)
+            // 2. TRY FIREBASE (Async - Conditional Update)
             if (window.FirebaseAPI && window.FirebaseAPI.db) {
                 try {
-                    const { db, setDoc, doc, collection } = window.FirebaseAPI;
-                    // Use Name as Doc ID for automatic deduplication (Upsert)
-                    const docId = pName.replace(/\//g, "_");
+                    const { db, setDoc, getDoc, doc } = window.FirebaseAPI;
 
-                    await setDoc(doc(db, "leaderboard", docId), entry);
-                    console.log("Score saved to Firebase!");
+                    // Use Lowercase Name as Doc ID for strict deduplication
+                    const docId = pName.toLowerCase().replace(/\//g, "_");
+                    const docRef = doc(db, "leaderboard", docId);
+
+                    // Check existing score first
+                    const docSnap = await getDoc(docRef);
+
+                    let shouldUpdate = true;
+                    if (docSnap.exists()) {
+                        const oldData = docSnap.data();
+                        // Logic: Only update if Level is HIGHER, or Level is SAME but Time is FASTER
+                        if (entry.level < oldData.level) {
+                            shouldUpdate = false;
+                            console.log("New score is lower. Keeping existing high score.");
+                        } else if (entry.level === oldData.level && entry.avgTime >= oldData.avgTime) {
+                            shouldUpdate = false;
+                            console.log("Score is same or slower. Keeping existing.");
+                        }
+                    }
+
+                    if (shouldUpdate) {
+                        await setDoc(docRef, entry);
+                        console.log("New High Score saved to Firebase!");
+                    }
                 } catch (e) {
                     console.error("Firebase save failed:", e);
                 }
